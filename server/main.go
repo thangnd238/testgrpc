@@ -1,37 +1,37 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"google.golang.org/grpc"
 	"log"
 	"net"
+
+	"google.golang.org/grpc"
+
 	"testgrpc/proto"
+	"testgrpc/server/controller"
+	"testgrpc/server/service"
 )
 
 const (
 	port = 50001
 )
 
-type greeterServer struct {
-	proto.UnimplementedGreeterServer
-}
-
-func (g greeterServer) SayHello(ctx context.Context, in *proto.HelloRequest) (*proto.HelloReply, error) {
-	name := in.GetName()
-	return &proto.HelloReply{
-		Message: "Hello" + name,
-	}, nil
-}
-
 func main() {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+
+	greeterService := service.NewGreeterService()
+	greeterController := controller.NewGreeterController(greeterService)
+
+	taskController := controller.NewTaskController()
+
 	s := grpc.NewServer()
-	proto.RegisterGreeterServer(s, &greeterServer{})
+	proto.RegisterGreeterServer(s, greeterController)
+	proto.RegisterTaskServer(s, taskController)
 	log.Printf("server listening at %v", lis.Addr())
+
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

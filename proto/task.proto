@@ -1,0 +1,15 @@
+syntax="proto3";
+
+option go_package = "testgrpc/proto";
+
+service Task {
+  rpc GetTask(TaskRequest) returns (TaskReply) {}
+}
+
+message TaskRequest {
+  string name = 1;
+}
+
+message TaskReply {
+  string message = 1;
+}
